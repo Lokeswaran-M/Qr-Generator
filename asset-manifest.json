@@ -1,15 +1,24 @@
 {
   "files": {
-    "main.css": "./static/css/main.73e034a3.css",
-    "main.js": "./static/js/main.fb570515.js",
+    "main.css": "./static/css/main.53e10888.css",
+    "main.js": "./static/js/main.52f3ce76.js",
+    "static/js/651.0160fc11.chunk.js": "./static/js/651.0160fc11.chunk.js",
     "static/js/453.582855c5.chunk.js": "./static/js/453.582855c5.chunk.js",
+    "static/js/626.dd6b1f30.chunk.js": "./static/js/626.dd6b1f30.chunk.js",
+    "static/js/284.2ea70782.chunk.js": "./static/js/284.2ea70782.chunk.js",
+    "static/media/ort-wasm-simd-threaded.jsep.wasm": "./static/media/ort-wasm-simd-threaded.jsep.ce14fe5a0a12cc7d4389.wasm",
+    "static/media/ort.webgpu.bundle.min.mjs": "./static/media/ort.webgpu.bundle.min.774c3df41218a886bf43.mjs",
+    "static/media/ort.bundle.min.mjs": "./static/media/ort.bundle.min.33c49a9410ed516f1492.mjs",
     "index.html": "./index.html",
-    "main.73e034a3.css.map": "./static/css/main.73e034a3.css.map",
-    "main.fb570515.js.map": "./static/js/main.fb570515.js.map",
-    "453.582855c5.chunk.js.map": "./static/js/453.582855c5.chunk.js.map"
+    "main.53e10888.css.map": "./static/css/main.53e10888.css.map",
+    "main.52f3ce76.js.map": "./static/js/main.52f3ce76.js.map",
+    "651.0160fc11.chunk.js.map": "./static/js/651.0160fc11.chunk.js.map",
+    "453.582855c5.chunk.js.map": "./static/js/453.582855c5.chunk.js.map",
+    "626.dd6b1f30.chunk.js.map": "./static/js/626.dd6b1f30.chunk.js.map",
+    "284.2ea70782.chunk.js.map": "./static/js/284.2ea70782.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.73e034a3.css",
-    "static/js/main.fb570515.js"
+    "static/css/main.53e10888.css",
+    "static/js/main.52f3ce76.js"
   ]
 }
