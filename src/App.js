@@ -1138,11 +1138,17 @@ function App() {
           </div>
         </div>
       </main>
+<footer
+  className={`text-center py-6 text-sm ${
+    isDarkMode ? 'text-gray-500' : 'text-gray-400'
+  }`}
+>
+  <p>© 2026 Lokeswaran M. All rights reserved.</p>
 
-      <footer className={`text-center py-6 text-sm ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-        <p>QR Studio Pro • Built with qr-code-styling v1.9.2</p>
-        <p className="text-xs mt-1">All qr-code-styling types supported • Square/Circle shapes • SVG/Canvas output</p>
-      </footer>
+  <p className="text-xs mt-1">
+    All qr-code-styling types supported • Square/Circle shapes • SVG/Canvas output
+  </p>
+</footer>
     </div>
   );
 }
