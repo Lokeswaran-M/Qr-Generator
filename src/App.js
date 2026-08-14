@@ -612,9 +612,9 @@ function App() {
                 <QrCode className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                  QR Studio Pro
-                </h1>
+                <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+                  QR Designer Pro
+                </span>
                 <p className="text-xs text-gray-500">
                   Professional QR Code Generator
                 </p>
@@ -648,6 +648,17 @@ function App() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {/* SEO Intro */}
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            Free QR Code Generator
+          </h1>
+          <p className="mt-3 text-sm sm:text-base text-gray-600">
+            Create QR codes online quickly and easily. Generate QR codes for
+            websites, URLs, text, and more.
+          </p>
+        </div>
+
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Left Panel – Customization */}
           <div className="space-y-6">
