@@ -613,7 +613,7 @@ function App() {
               </div>
               <div>
                 <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                  QR Designer Pro
+                  QR Designer
                 </span>
                 <p className="text-xs text-gray-500">
                   Professional QR Code Generator
@@ -654,8 +654,8 @@ function App() {
             Free QR Code Generator
           </h1>
           <p className="mt-3 text-sm sm:text-base text-gray-600">
-            Create QR codes online quickly and easily. Generate QR codes for
-            websites, URLs, text, and more.
+            Create QR codes online quickly and easily. Generate free QR codes
+            for websites, URLs, text, and more.
           </p>
         </div>
 
@@ -1071,6 +1071,84 @@ function App() {
             </motion.div>
           </div>
         </div>
+
+        {/* How to Generate a QR Code */}
+        <section className="mt-12">
+          <h2 className="text-xl sm:text-2xl font-bold text-center bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            How to Generate a QR Code
+          </h2>
+          <div className="mt-6 grid sm:grid-cols-3 gap-6">
+            <div
+              className={`p-5 rounded-2xl shadow-sm ${
+                isDarkMode ? "bg-gray-800" : "bg-white"
+              }`}
+            >
+              <h3 className="font-semibold text-purple-600">
+                1. Add your content
+              </h3>
+              <p
+                className={`mt-2 text-sm ${
+                  isDarkMode ? "text-gray-300" : "text-gray-600"
+                }`}
+              >
+                Type or paste the URL, text, or data you want to encode into
+                the QR Code Content field above.
+              </p>
+            </div>
+            <div
+              className={`p-5 rounded-2xl shadow-sm ${
+                isDarkMode ? "bg-gray-800" : "bg-white"
+              }`}
+            >
+              <h3 className="font-semibold text-purple-600">
+                2. Customize your QR code
+              </h3>
+              <p
+                className={`mt-2 text-sm ${
+                  isDarkMode ? "text-gray-300" : "text-gray-600"
+                }`}
+              >
+                Choose colors, shapes, and styling options so your generated QR
+                code matches your brand or preference.
+              </p>
+            </div>
+            <div
+              className={`p-5 rounded-2xl shadow-sm ${
+                isDarkMode ? "bg-gray-800" : "bg-white"
+              }`}
+            >
+              <h3 className="font-semibold text-purple-600">
+                3. Download and share
+              </h3>
+              <p
+                className={`mt-2 text-sm ${
+                  isDarkMode ? "text-gray-300" : "text-gray-600"
+                }`}
+              >
+                Download your ready QR code as PNG, SVG, WebP, or JPEG and use
+                it anywhere you like.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* What Can You Use a QR Code For? */}
+        <section className="mt-12 text-center max-w-3xl mx-auto">
+          <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            What Can You Use a QR Code For?
+          </h2>
+          <p
+            className={`mt-4 text-sm ${
+              isDarkMode ? "text-gray-300" : "text-gray-600"
+            }`}
+          >
+            Use your free QR code to share a website link, hand out contact
+            details, connect people to Wi-Fi, point to a product page, or link
+            to your social profiles. A QR code generator turns plain text or a
+            URL into a scannable code that anyone can open straight from their
+            phone camera.
+          </p>
+        </section>
       </main>
 
       <footer
