@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ReactQRCode } from "@lglab/react-qr-code"; // or @igb-lab/react-qr-code
 import {
@@ -20,13 +20,26 @@ import {
   Disc,
   Hexagon,
   Image as ImageIcon,
-  Sliders,
   Leaf,
   Star,
   Heart,
   Minus,
   RotateCw,
   Scissors,
+  Globe,
+  Phone,
+  Mail,
+  MessageSquare,
+  Wifi,
+  User,
+  MapPin,
+  Calendar,
+  Wallet,
+  History,
+  Trash2,
+  Save,
+  ScanLine,
+  Video as VideoIcon,
 } from "lucide-react";
 
 // ==================== Reusable Components ====================
@@ -521,6 +534,426 @@ const ImageSettingsEditor = ({
 
 // ==================== Main App Component ====================
 
+// ==================== Advanced Feature Config ====================
+
+const QR_TYPES = [
+  { id: "text", name: "Text", icon: <Type className="w-4 h-4" /> },
+  { id: "url", name: "URL", icon: <Globe className="w-4 h-4" /> },
+  { id: "phone", name: "Phone", icon: <Phone className="w-4 h-4" /> },
+  { id: "email", name: "Email", icon: <Mail className="w-4 h-4" /> },
+  { id: "sms", name: "SMS", icon: <MessageSquare className="w-4 h-4" /> },
+  { id: "wifi", name: "Wi-Fi", icon: <Wifi className="w-4 h-4" /> },
+  { id: "vcard", name: "Contact", icon: <User className="w-4 h-4" /> },
+  { id: "location", name: "Location", icon: <MapPin className="w-4 h-4" /> },
+  { id: "event", name: "Event", icon: <Calendar className="w-4 h-4" /> },
+  { id: "upi", name: "UPI", icon: <Wallet className="w-4 h-4" /> },
+];
+
+const QR_DEFAULTS = {
+  text: { text: "" },
+  url: { url: "https://example.com" },
+  phone: { phone: "+1234567890" },
+  email: { email: "you@example.com", subject: "", body: "" },
+  sms: { number: "+1234567890", message: "" },
+  wifi: { ssid: "MyNetwork", password: "", encryption: "WPA", hidden: false },
+  vcard: { first: "", last: "", org: "", title: "", phone: "", email: "", website: "", address: "" },
+  location: { lat: "", lng: "" },
+  event: { title: "", start: "", end: "", location: "", description: "" },
+  upi: { upiId: "", name: "", amount: "", note: "" },
+};
+
+function buildContent(type, f) {
+  switch (type) {
+    case "text":
+      return f.text || "";
+    case "url":
+      return f.url || "";
+    case "phone":
+      return `tel:${f.phone || ""}`;
+    case "email": {
+      let s = `mailto:${f.email || ""}`;
+      const q = [];
+      if (f.subject) q.push(`subject=${encodeURIComponent(f.subject)}`);
+      if (f.body) q.push(`body=${encodeURIComponent(f.body)}`);
+      if (q.length) s += `?${q.join("&")}`;
+      return s;
+    }
+    case "sms":
+      return `SMSTO:${f.number || ""}:${encodeURIComponent(f.message || "")}`;
+    case "wifi": {
+      const auth = f.encryption || "WPA";
+      const hid = f.hidden ? "true" : "false";
+      return `WIFI:T:${auth};S:${f.ssid || ""};P:${f.password || ""};H:${hid};;`;
+    }
+    case "vcard": {
+      const lines = ["BEGIN:VCARD", "VERSION:3.0"];
+      lines.push(`N:${f.last || ""};${f.first || ""}`);
+      if (f.first || f.last)
+        lines.push(`FN:${[f.first, f.last].filter(Boolean).join(" ")}`);
+      if (f.org) lines.push(`ORG:${f.org}`);
+      if (f.title) lines.push(`TITLE:${f.title}`);
+      if (f.phone) lines.push(`TEL:${f.phone}`);
+      if (f.email) lines.push(`EMAIL:${f.email}`);
+      if (f.website) lines.push(`URL:${f.website}`);
+      if (f.address) lines.push(`ADR:;;${f.address}`);
+      lines.push("END:VCARD");
+      return lines.join("\n");
+    }
+    case "location":
+      return `geo:${f.lat || ""},${f.lng || ""}`;
+    case "event": {
+      const lines = ["BEGIN:VEVENT", "VERSION:2.0"];
+      if (f.title) lines.push(`SUMMARY:${f.title}`);
+      if (f.start) lines.push(`DTSTART:${f.start.replace(/[-:]/g, "")}`);
+      if (f.end) lines.push(`DTEND:${f.end.replace(/[-:]/g, "")}`);
+      if (f.location) lines.push(`LOCATION:${f.location}`);
+      if (f.description) lines.push(`DESCRIPTION:${f.description}`);
+      lines.push("END:VEVENT");
+      return lines.join("\n");
+    }
+    case "upi": {
+      const params = [`pa=${f.upiId || ""}`];
+      if (f.name) params.push(`pn=${encodeURIComponent(f.name)}`);
+      if (f.amount) params.push(`am=${f.amount}&cu=INR`);
+      if (f.note) params.push(`tn=${encodeURIComponent(f.note)}`);
+      return `upi://pay?${params.join("&")}`;
+    }
+    default:
+      return "";
+  }
+}
+
+const TEMPLATES = [
+  { id: "website", name: "Website", type: "url", icon: <Globe className="w-4 h-4" />, fields: { url: "https://example.com" } },
+  { id: "whatsapp", name: "WhatsApp", type: "url", icon: <MessageSquare className="w-4 h-4" />, fields: { url: "https://wa.me/1234567890" } },
+  { id: "wifi", name: "Wi-Fi", type: "wifi", icon: <Wifi className="w-4 h-4" />, fields: { ssid: "MyNetwork", password: "your-password", encryption: "WPA" } },
+  { id: "contact", name: "Contact", type: "vcard", icon: <User className="w-4 h-4" />, fields: { first: "First", last: "Last", phone: "+1234567890", email: "you@example.com" } },
+  { id: "upi", name: "UPI", type: "upi", icon: <Wallet className="w-4 h-4" />, fields: { upiId: "yourname@bank", name: "Your Name" } },
+  { id: "email", name: "Email", type: "email", icon: <Mail className="w-4 h-4" />, fields: { email: "you@example.com" } },
+  { id: "phone", name: "Phone", type: "phone", icon: <Phone className="w-4 h-4" />, fields: { phone: "+1234567890" } },
+  { id: "location", name: "Location", type: "location", icon: <MapPin className="w-4 h-4" />, fields: { lat: "12.9716", lng: "77.5946" } },
+];
+
+// ==================== QR Scanner (lazy-loaded decode) ====================
+
+function QrScannerModal({ onClose, onResult, isDarkMode }) {
+  const videoRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const streamRef = useRef(null);
+  const rafRef = useRef(null);
+  const [error, setError] = useState(null);
+  const [cameraOn, setCameraOn] = useState(false);
+
+  const stop = useCallback(() => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) videoRef.current.srcObject = null;
+    setCameraOn(false);
+  }, []);
+
+  useEffect(() => {
+    return () => stop();
+  }, [stop]);
+
+  const startCamera = useCallback(async () => {
+    setError(null);
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setError(
+        "Camera scanning isn't supported on this device or connection. You can still scan by uploading an image below."
+      );
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+        audio: false,
+      });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+      setCameraOn(true);
+      const jsQR = (await import("jsqr")).default;
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      const tick = () => {
+        const v = videoRef.current;
+        if (v && v.readyState === v.HAVE_ENOUGH_DATA) {
+          canvas.width = v.videoWidth;
+          canvas.height = v.videoHeight;
+          ctx.drawImage(v, 0, 0);
+          const id = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const code = jsQR(id.data, id.width, id.height, {
+            inversionAttempts: "dontInvert",
+          });
+          if (code && code.data) {
+            stop();
+            onResult(code.data);
+            return;
+          }
+        }
+        rafRef.current = requestAnimationFrame(tick);
+      };
+      rafRef.current = requestAnimationFrame(tick);
+    } catch (err) {
+      setError(
+        "Could not access the camera. Please allow camera permission, or upload an image to scan instead."
+      );
+    }
+  }, [onResult, stop]);
+
+  const scanFile = useCallback(
+    (file) => {
+      if (!file) return;
+      setError(null);
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const jsQR = (await import("jsqr")).default;
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext("2d", { willReadFrequently: true });
+            ctx.drawImage(img, 0, 0);
+            const id = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(id.data, id.width, id.height, {
+              inversionAttempts: "attemptBoth",
+            });
+            if (code && code.data) {
+              stop();
+              onResult(code.data);
+            } else {
+              setError("No QR code was found in that image.");
+            }
+          };
+          img.onerror = () => setError("Could not read that image.");
+          img.src = reader.result;
+        } catch (e) {
+          setError("Could not scan the image.");
+        }
+      };
+      reader.onerror = () => setError("Could not read the file.");
+      reader.readAsDataURL(file);
+    },
+    [onResult, stop]
+  );
+
+  return (
+<div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className={`w-full max-w-md rounded-2xl shadow-2xl p-6 ${
+          isDarkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+        }`}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-semibold text-lg flex items-center gap-2">
+            <ScanLine className="w-5 h-5 text-purple-600" /> Scan QR Code
+          </h2>
+          <button
+            onClick={() => {
+              stop();
+              onClose();
+            }}
+            aria-label="Close scanner"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <p
+          className={`text-xs mb-4 ${
+            isDarkMode ? "text-gray-400" : "text-gray-500"
+          }`}
+        >
+          We'll use your camera only to read a QR code. Everything is decoded on
+          your device — nothing is uploaded or stored on any server.
+        </p>
+
+        {!cameraOn && (
+          <button
+            onClick={startCamera}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-medium shadow-lg"
+          >
+            <VideoIcon className="w-5 h-5" /> Start Camera
+          </button>
+        )}
+
+        {cameraOn && (
+          <div className="relative mb-3">
+            <video
+              ref={videoRef}
+              muted
+              playsInline
+              className="w-full rounded-xl bg-black"
+              style={{ maxHeight: 260 }}
+            />
+            <button
+              onClick={stop}
+              className="absolute top-2 right-2 px-3 py-1 rounded-lg bg-red-500 text-white text-xs font-medium"
+            >
+              Stop Camera
+            </button>
+          </div>
+        )}
+
+        <div className="mt-3">
+          <label
+            className={`block text-xs mb-1 ${
+              isDarkMode ? "text-gray-400" : "text-gray-500"
+            }`}
+          >
+            Or scan from an image:
+          </label>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg border text-sm ${
+              isDarkMode
+                ? "bg-gray-700 border-gray-600 text-gray-200"
+                : "bg-white border-gray-300 text-gray-700"
+            }`}
+          >
+            <Upload className="w-4 h-4" /> Upload image to scan
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              if (e.target.files[0]) scanFile(e.target.files[0]);
+              e.target.value = "";
+            }}
+          />
+        </div>
+
+        {error && (
+          <p className="mt-3 text-xs text-red-500 bg-red-100 dark:bg-red-900/40 px-3 py-2 rounded-lg">
+            {error}
+          </p>
+        )}
+      </motion.div>
+    </div>
+  );
+}
+
+// ==================== QR Type Fields (config-driven) ====================
+
+const TYPE_FIELDS = {
+  url: [{ k: "url", label: "URL" }],
+  phone: [{ k: "phone", label: "Phone number", type: "tel" }],
+  email: [
+    { k: "email", label: "Email", type: "email" },
+    { k: "subject", label: "Subject" },
+    { k: "body", label: "Message", type: "textarea" },
+  ],
+  sms: [
+    { k: "number", label: "Phone number", type: "tel" },
+    { k: "message", label: "Message", type: "textarea" },
+  ],
+  wifi: [
+    { k: "ssid", label: "Network name (SSID)" },
+    { k: "password", label: "Password (leave empty for open network)" },
+    {
+      k: "encryption",
+      label: "Encryption",
+      type: "select",
+      options: ["WPA", "WPA2", "WEP", "nopass"],
+    },
+  ],
+  vcard: [
+    { k: "first", label: "First name" },
+    { k: "last", label: "Last name" },
+    { k: "org", label: "Organization" },
+    { k: "title", label: "Job title" },
+    { k: "phone", label: "Phone", type: "tel" },
+    { k: "email", label: "Email", type: "email" },
+    { k: "website", label: "Website" },
+    { k: "address", label: "Address" },
+  ],
+  location: [
+    { k: "lat", label: "Latitude", type: "number" },
+    { k: "lng", label: "Longitude", type: "number" },
+  ],
+  event: [
+    { k: "title", label: "Event title" },
+    { k: "start", label: "Start date & time", type: "datetime-local" },
+    { k: "end", label: "End date & time", type: "datetime-local" },
+    { k: "location", label: "Location" },
+    { k: "description", label: "Description", type: "textarea" },
+  ],
+  upi: [
+    { k: "upiId", label: "UPI ID (e.g. name@bank)" },
+    { k: "name", label: "Payee name" },
+    { k: "amount", label: "Amount (₹)" },
+    { k: "note", label: "Note" },
+  ],
+};
+
+function QrTypeFields({ type, fields, onField, isDarkMode }) {
+  const list = TYPE_FIELDS[type] || [];
+  const base = `w-full px-3 py-2 rounded-xl border ${
+    isDarkMode ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-200"
+  }`;
+  return (
+    <div className="space-y-3">
+      {list.map((f) => (
+        <div key={f.k}>
+          <label className="block text-xs font-medium text-gray-500 mb-1">
+            {f.label}
+          </label>
+          {f.type === "textarea" ? (
+            <textarea
+              rows={2}
+              value={fields[f.k] || ""}
+              onChange={(e) => onField(f.k, e.target.value)}
+              className={base}
+            />
+          ) : f.type === "select" ? (
+            <select
+              value={fields[f.k] || ""}
+              onChange={(e) => onField(f.k, e.target.value)}
+              className={base}
+            >
+              {f.options.map((o) => (
+                <option key={o} value={o}>
+                  {o}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type={f.type || "text"}
+              value={fields[f.k] || ""}
+              onChange={(e) => onField(f.k, e.target.value)}
+              className={base}
+            />
+          )}
+        </div>
+      ))}
+      {type === "wifi" && (
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={!!fields.hidden}
+            onChange={(e) => onField("hidden", e.target.checked)}
+            className="w-4 h-4 accent-purple-600"
+          />
+          Hidden network
+        </label>
+      )}
+    </div>
+  );
+}
+
 const LINE_WIDTH_SUPPORTED = [
   "vertical-line",
   "horizontal-line",
@@ -538,7 +971,7 @@ function App() {
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
   const [qrSize, setQrSize] = useState(300);
   const [errorCorrectionLevel, setErrorCorrectionLevel] = useState("H");
-  const [margin, setMargin] = useState(0);
+  const [margin, setMargin] = useState(5);
   const [lineWidth, setLineWidth] = useState(1);
 
   // Image settings states
@@ -556,23 +989,170 @@ function App() {
 
   const qrRef = useRef(null);
 
-  const handleDownload = useCallback(
-    (format) => {
-      if (qrRef.current && qrContent) {
-        qrRef.current.download({
-          name: `qr-code-${Date.now()}`,
-          format,
-          size: 800,
-        });
+  // ---- Advanced feature state ----
+  const [qrType, setQrType] = useState("url");
+  const [qrFields, setQrFields] = useState({ ...QR_DEFAULTS.url });
+  const [gradientEnabled, setGradientEnabled] = useState(false);
+  const [gradientFrom, setGradientFrom] = useState("#3b82f6");
+  const [gradientTo, setGradientTo] = useState("#8b5cf6");
+  const [gradientType, setGradientType] = useState("linear");
+  const [gradientRotation, setGradientRotation] = useState(90);
+  const [exportSize, setExportSize] = useState(1024);
+  const [showScanner, setShowScanner] = useState(false);
+  const [history, setHistory] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("qr_history") || "[]");
+    } catch {
+      return [];
+    }
+  });
+
+  // Keep structured type fields synced into qrContent.
+  const updateFields = useCallback(
+    (patch) => {
+      setQrFields((prev) => {
+        const next = { ...prev, ...patch };
+        setQrContent(buildContent(qrType, next));
+        return next;
+      });
+    },
+    [qrType]
+  );
+
+  const changeQrType = useCallback(
+    (type) => {
+      setQrType(type);
+      setQrFields({ ...QR_DEFAULTS[type] });
+      setQrContent(buildContent(type, QR_DEFAULTS[type]));
+    },
+    []
+  );
+
+  const applyTemplate = useCallback((template) => {
+    setQrType(template.type);
+    setQrFields({ ...template.fields });
+    setQrContent(buildContent(template.type, template.fields));
+  }, []);
+
+  // ---- History (localStorage only) ----
+  const saveToHistory = useCallback(() => {
+    if (!qrContent || !qrContent.trim()) return;
+    const typeMeta = QR_TYPES.find((t) => t.id === qrType);
+    const entry = {
+      id: `${Date.now()}-${Math.round(Math.random() * 1e5)}`,
+      content: qrContent,
+      type: qrType,
+      label: typeMeta ? typeMeta.name : "QR",
+      ts: Date.now(),
+    };
+    setHistory((prev) => {
+      const next = [entry, ...prev].slice(0, 50);
+      try {
+        localStorage.setItem("qr_history", JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+  }, [qrContent, qrType]);
+
+  const deleteHistoryItem = useCallback((id) => {
+    setHistory((prev) => {
+      const next = prev.filter((h) => h.id !== id);
+      try {
+        localStorage.setItem("qr_history", JSON.stringify(next));
+      } catch (e) {}
+      return next;
+    });
+  }, []);
+
+  const clearHistory = useCallback(() => {
+    setHistory([]);
+    try {
+      localStorage.removeItem("qr_history");
+    } catch (e) {}
+  }, []);
+
+  const reuseHistoryItem = useCallback((item) => {
+    setQrContent(item.content);
+    if (QR_TYPES.some((t) => t.id === item.type)) {
+      setQrType(item.type);
+      setQrFields({ ...QR_DEFAULTS[item.type] });
+    }
+  }, []);
+
+  // ---- Export: PNG / SVG / JPG / WebP with high-res sizes ----
+  const exportQR = useCallback(
+    (format, size) => {
+      const svg = qrRef.current?.svg;
+      if (!svg || !qrContent) return;
+      const serialized = new XMLSerializer().serializeToString(svg);
+      const blob = new Blob([serialized], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      if (format === "svg") {
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `qr-code-${Date.now()}.svg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        return;
       }
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        if (format === "jpeg") {
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(0, 0, size, size);
+        }
+        ctx.drawImage(img, 0, 0, size, size);
+        URL.revokeObjectURL(url);
+        const mime =
+          format === "png"
+            ? "image/png"
+            : format === "webp"
+            ? "image/webp"
+            : "image/jpeg";
+        const out = canvas.toDataURL(mime, format === "jpeg" ? 0.92 : undefined);
+        const a = document.createElement("a");
+        a.href = out;
+        a.download = `qr-code-${Date.now()}.${format}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      };
+      img.onerror = () => URL.revokeObjectURL(url);
+      img.src = url;
     },
     [qrContent]
   );
 
-  const handleDownloadPNG = () => handleDownload("png");
-  const handleDownloadSVG = () => handleDownload("svg");
-  const handleDownloadWebP = () => handleDownload("webp");
-  const handleDownloadJPEG = () => handleDownload("jpeg");
+  const handleDownloadPNG = () => {
+    exportQR("png", exportSize);
+    saveToHistory();
+  };
+  const handleDownloadSVG = () => {
+    exportQR("svg", exportSize);
+    saveToHistory();
+  };
+  const handleDownloadWebP = () => {
+    exportQR("webp", exportSize);
+    saveToHistory();
+  };
+  const handleDownloadJPEG = () => {
+    exportQR("jpeg", exportSize);
+    saveToHistory();
+  };
+
+  const handleScannerResult = (data) => {
+    setShowScanner(false);
+    setQrContent(data);
+    setQrType("text");
+    setQrFields({ ...QR_DEFAULTS.text, text: data });
+  };
 
   // Build image settings prop for QR component
   const logoImageSettings = includeImage
@@ -673,11 +1253,82 @@ function App() {
               <div className="flex items-center gap-2 mb-4">
                 <Type className="w-5 h-5 text-purple-600" />
                 <h2 className="font-semibold text-lg">QR Code Content</h2>
+                <div className="ml-auto">
+                  <button
+                    onClick={() => setShowScanner(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow"
+                    title="Scan a QR code with your camera or an image"
+                  >
+                    <ScanLine className="w-4 h-4" /> Scan QR
+                  </button>
+                </div>
               </div>
+
+              {/* Quick Templates */}
+              <div className="mb-4">
+                <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">
+                  Quick Templates
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {TEMPLATES.map((tpl) => (
+                    <button
+                      key={tpl.id}
+                      onClick={() => applyTemplate(tpl)}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-colors ${
+                        isDarkMode
+                          ? "border-gray-600 text-gray-200 hover:border-purple-400"
+                          : "border-gray-200 text-gray-600 hover:border-purple-300"
+                      }`}
+                    >
+                      {tpl.icon}
+                      {tpl.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* QR Type selector */}
+              <div className="mb-4">
+                <p className="text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">
+                  QR Type
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {QR_TYPES.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => changeQrType(t.id)}
+                      className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-colors ${
+                        qrType === t.id
+                          ? "border-purple-500 bg-purple-50 text-purple-700"
+                          : isDarkMode
+                          ? "border-gray-600 text-gray-200 hover:border-purple-400"
+                          : "border-gray-200 text-gray-600 hover:border-purple-300"
+                      }`}
+                    >
+                      {t.icon}
+                      {t.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Type-specific fields */}
+              <div className="mb-4">
+                <QrTypeFields
+                  type={qrType}
+                  fields={qrFields}
+                  onField={(k, v) => updateFields({ [k]: v })}
+                  isDarkMode={isDarkMode}
+                />
+              </div>
+
+              <label className="block text-xs font-medium text-gray-500 mb-2 uppercase tracking-wider">
+                Encoded content (auto-generated)
+              </label>
               <textarea
                 value={qrContent}
                 onChange={(e) => setQrContent(e.target.value)}
-                placeholder="Enter URL, text, or data to encode..."
+                placeholder="Your QR code content appears here..."
                 rows={3}
                 className={`w-full px-4 py-3 rounded-xl border-2 focus:ring-4 focus:ring-purple-200 focus:border-purple-500 transition-all resize-none ${
                   isDarkMode
@@ -801,15 +1452,77 @@ function App() {
                       label="Background Color"
                     />
                     <div className="flex items-center gap-3 pt-2">
-                      <button
-                        onClick={() => setBackgroundColor("transparent")}
-                        className="text-xs px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-50"
-                      >
-                        Make Transparent
-                      </button>
+                        <button
+                          onClick={() => setBackgroundColor("transparent")}
+                          className="text-xs px-3 py-1 rounded-lg border border-gray-300 hover:bg-gray-50"
+                        >
+                          Make Transparent
+                        </button>
+                      </div>
+
+                      {/* Gradient */}
+                      <div className="pt-2 border-t border-gray-200 dark:border-gray-600">
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={gradientEnabled}
+                            onChange={(e) => setGradientEnabled(e.target.checked)}
+                            className="w-4 h-4 accent-purple-600"
+                          />
+                          <span className="text-sm font-medium">Gradient</span>
+                        </label>
+                        {gradientEnabled && (
+                          <div className="space-y-3 mt-3">
+                            <div className="flex gap-2">
+                              <ColorPicker
+                                color={gradientFrom}
+                                onChange={setGradientFrom}
+                                label="From"
+                              />
+                              <ColorPicker
+                                color={gradientTo}
+                                onChange={setGradientTo}
+                                label="To"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-500 mb-2">
+                                Type
+                              </label>
+                              <select
+                                value={gradientType}
+                                onChange={(e) => setGradientType(e.target.value)}
+                                className={`w-full px-3 py-2 rounded-lg border ${
+                                  isDarkMode
+                                    ? "bg-gray-700 border-gray-600 text-white"
+                                    : "bg-white border-gray-200"
+                                }`}
+                              >
+                                <option value="linear">Linear</option>
+                                <option value="radial">Radial</option>
+                              </select>
+                            </div>
+                            <div>
+                              <label className="block text-xs font-medium text-gray-500 mb-2">
+                                Rotation ({gradientRotation}°)
+                              </label>
+                              <input
+                                type="range"
+                                min="0"
+                                max="360"
+                                step="5"
+                                value={gradientRotation}
+                                onChange={(e) =>
+                                  setGradientRotation(Number(e.target.value))
+                                }
+                                className="w-full accent-purple-600"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </AccordionSection>
+                  </AccordionSection>
 
                 {/* Advanced Settings */}
                 <AccordionSection
@@ -971,6 +1684,18 @@ function App() {
                         style: selectedFinderInner,
                       }}
                       imageSettings={logoImageSettings}
+                      gradient={
+                        gradientEnabled
+                          ? {
+                              type: gradientType,
+                              rotation: gradientRotation,
+                              stops: [
+                                { offset: "0%", color: gradientFrom },
+                                { offset: "100%", color: gradientTo },
+                              ],
+                            }
+                          : undefined
+                      }
                       boostLevel
                     />
                   </div>
@@ -1037,6 +1762,36 @@ function App() {
                 </p>
               </div>
 
+              {/* Export size + Save */}
+              <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                <select
+                  value={exportSize}
+                  onChange={(e) => setExportSize(Number(e.target.value))}
+                  aria-label="Export resolution"
+                  className={`px-3 py-2 rounded-xl border text-sm flex-1 ${
+                    isDarkMode
+                      ? "bg-gray-700 border-gray-600 text-white"
+                      : "bg-white border-gray-200"
+                  }`}
+                >
+                  <option value={512}>512px - Small</option>
+                  <option value={1024}>1024px - Standard</option>
+                  <option value={2048}>2048px - High Res</option>
+                  <option value={4096}>4096px - Ultra HD</option>
+                </select>
+                <button
+                  onClick={saveToHistory}
+                  disabled={!qrContent}
+                  className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-colors disabled:opacity-50 ${
+                    isDarkMode
+                      ? "border-gray-600 text-gray-200"
+                      : "border-gray-300 text-gray-700"
+                  }`}
+                >
+                  <Save className="w-4 h-4" /> Save to History
+                </button>
+              </div>
+
               {/* Download Buttons */}
               <div className="mt-6 grid grid-cols-2 gap-3">
                 <IconButton
@@ -1071,6 +1826,87 @@ function App() {
             </motion.div>
           </div>
         </div>
+
+        {/* QR History (localStorage only) */}
+        <section className="mt-12">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+              <History className="w-6 h-6 text-purple-600" /> QR Code History
+            </h2>
+            <button
+              onClick={clearHistory}
+              disabled={history.length === 0}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium disabled:opacity-50 ${
+                isDarkMode ? "border-gray-600 text-gray-200" : "border-gray-300 text-gray-700"
+              }`}
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Clear All
+            </button>
+          </div>
+          <p
+            className={`mt-1 text-xs ${
+              isDarkMode ? "text-gray-400" : "text-gray-500"
+            }`}
+          >
+            Saved only in your browser (localStorage). Nothing is uploaded to any
+            server.
+          </p>
+
+          {history.length === 0 ? (
+            <p
+              className={`mt-4 text-sm ${
+                isDarkMode ? "text-gray-400" : "text-gray-500"
+              }`}
+            >
+              No saved QR codes yet. Download a QR code or use "Save to History"
+              to add one.
+            </p>
+          ) : (
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {history.map((item) => (
+                <div
+                  key={item.id}
+                  className={`rounded-2xl p-3 shadow-sm ${
+                    isDarkMode ? "bg-gray-800" : "bg-white"
+                  }`}
+                >
+                  <div className="flex items-center justify-center bg-white rounded-xl p-2">
+                    <ReactQRCode
+                      value={item.content || " "}
+                      size={88}
+                      marginSize={0}
+                      level="Q"
+                      dataModulesSettings={{ color: "#000000", style: "square" }}
+                    />
+                  </div>
+                  <div className="mt-2">
+                    <span className="text-xs font-semibold text-purple-600">
+                      {item.label}
+                    </span>
+                    <p className="text-xs truncate mt-0.5">{item.content}</p>
+                  </div>
+                  <div className="mt-2 flex gap-2">
+                    <button
+                      onClick={() => reuseHistoryItem(item)}
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-500 text-white text-xs font-medium"
+                    >
+                      <RotateCw className="w-3 h-3" /> Reuse
+                    </button>
+                    <button
+                      onClick={() => deleteHistoryItem(item.id)}
+                      aria-label="Delete history item"
+                      className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-xs ${
+                        isDarkMode ? "border-gray-600" : "border-gray-300"
+                      }`}
+                    >
+                      <Trash2 className="w-3 h-3" /> Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
 
         {/* How to Generate a QR Code */}
         <section className="mt-12">
@@ -1161,6 +1997,14 @@ function App() {
           All qr-code-styling types supported &bull; Square shape &bull; SVG output
         </p>
       </footer>
+
+      {showScanner && (
+        <QrScannerModal
+          isDarkMode={isDarkMode}
+          onClose={() => setShowScanner(false)}
+          onResult={handleScannerResult}
+        />
+      )}
     </div>
   );
 }
