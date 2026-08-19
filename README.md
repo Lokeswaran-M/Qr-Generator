@@ -1,70 +1,56 @@
-# Getting Started with Create React App
+# QRcode — Create. Track. Grow.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A premium, dark-first QR Code Generator & Design Studio. Create custom,
+high-quality QR codes for URLs, text, Wi-Fi, email, contacts, events and more
+— then download as PNG, SVG, WebP or JPEG. Everything runs 100% client-side;
+nothing is uploaded to a server.
 
-## Available Scripts
+## 🎨 Theme
 
-In the project directory, you can run:
+QRcode ships with a **premium SaaS color system** built on an electric
+emerald/teal brand identity, with dark mode as the default experience.
 
-### `npm start`
+| Token         | Value    | Role                                  |
+| ------------- | -------- | ------------------------------------- |
+| `brand`       | `#00C896`| Primary emerald/teal (actions, active)|
+| `tech`        | `#3B82F6`| Blue — analytics / information        |
+| `premium`     | `#8B5CF6`| Violet — advanced / premium features  |
+| `marketing`   | `#F59E0B`| Orange — campaigns / marketing        |
+| `surface`     | `#070B12`| Dark mode backgrounds & surfaces      |
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+All colors, typography, spacing, radius and shadow tokens are centralized in
+**`src/theme/`**, and mirrored in `tailwind.config.js` so UI classes like
+`bg-brand-500`, `text-brand-500`, `bg-surface-800` work everywhere. No raw hex
+colors are hardcoded in components.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Dark mode** is the primary experience; toggle to light via the header icon.
+- The chosen theme is persisted in `localStorage` and synced to the `dark`
+  class on `<html>` (so Tailwind `dark:` variants behave consistently).
 
-### `npm test`
+## ✨ Features
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- 15+ QR content types: URL, Text, Email, Phone, SMS, Wi-Fi, vCard, Event,
+  Location, Crypto/Wallet, and more
+- Deep customization: module shapes, finder/eye styles, colors, gradients,
+  embedded logos (with AI background removal), frames and error-correction
+- Live preview updated in real time
+- Export as PNG, SVG, WebP or JPEG at high resolution
+- Built-in QR scanner (camera or image)
+- QR history saved locally (`localStorage`)
+- Responsive, animated UI (Framer Motion) + Lucide icons
 
-### `npm run build`
+## 🚀 Scripts
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+In the project directory you can run:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- `npm start` — runs the app in development mode at [http://localhost:3000](http://localhost:3000)
+- `npm test` — launches the test runner in watch mode
+- `npm run build` — builds the production bundle to the `build/` folder
+- `npm run deploy` — builds and publishes to GitHub Pages (`gh-pages`)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🛠 Tech
 
-### `npm run eject`
+Built with React 19, Tailwind CSS, Framer Motion, `@lglab/react-qr-code`,
+`qr-code-styling`, `html-to-image` and `lucide-react`, bootstrapped with
+[Create React App](https://github.com/facebook/create-react-app).
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)

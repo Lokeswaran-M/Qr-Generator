@@ -10,8 +10,22 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #070B12;
+  background-image:
+    radial-gradient(
+      1200px 800px at 85% -10%,
+      rgba(0, 200, 150, 0.10),
+      transparent 60%
+    ),
+    radial-gradient(
+      1000px 700px at -10% 15%,
+      rgba(0, 200, 150, 0.05),
+      transparent 55%
+    ),
+    linear-gradient(180deg, #070B12 0%, #0A0F18 100%);
+  background-attachment: fixed;
   min-height: 100vh;
+  color: #F8FAFC;
 }
 
 .App {
@@ -22,4 +36,21 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* Premium scrollbar for the dark theme */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0A0F18;
+}
+::-webkit-scrollbar-thumb {
+  background: #263244;
+  border-radius: 8px;
+  border: 2px solid #0A0F18;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #33D6AE;
 }
