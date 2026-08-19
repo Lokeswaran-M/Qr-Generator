@@ -1,4 +1,4 @@
-/* QR Generator Service Worker - enables offline support after first load */
+/* QRcode Service Worker - enables offline support after first load */
 const CACHE_NAME = "qr-generator-v1";
 const APP_SHELL = ["/", "/index.html", "/manifest.json"];
 

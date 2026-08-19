@@ -1,6 +1,6 @@
 {
-  "short_name": "QR Generator",
-  "name": "QR Generator - Free QR Code Generator Online",
+  "short_name": "QRcode",
+  "name": "QRcode - Free QR Code Generator Online",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +20,6 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#6d28d9",
-  "background_color": "#ffffff"
+  "theme_color": "#00c896",
+  "background_color": "#070b12"
 }
